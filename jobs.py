@@ -7,7 +7,7 @@ sched = BlockingScheduler()
 start_logging()
 
 
-@sched.scheduled_job('interval', seconds=3)
+@sched.scheduled_job('interval', minutes=3)
 def timed_slf():
     config = {
         "apiKey": os.environ["apiKey"],
