@@ -1,11 +1,10 @@
 from PIL import Image
-import requests
 from io import BytesIO
-from StringIO import StringIO
 import requests
-from lxml import html
 from bs4 import BeautifulSoup
 import json
+import logging
+
 
 # https://github.com/ysavary/WindMobile2-Server/blob/master/providers/slf.py
 
@@ -37,7 +36,7 @@ class SLF:
         self.date = self.get_date()
 
     def get_date(self):
-        return  self.soup.find_all(attrs={"class": "date-aktuell"})[0].text.replace("\n", "").replace("\t", "")
+        return self.soup.find_all(attrs={"class": "date-aktuell"})[0].text.replace("\n", "").replace("\t", "").replace(".", "")
 
     def fetch(self):
         self.fetch_districts()
@@ -63,9 +62,9 @@ class SLF:
             danger = None
             content = None
             for b in a.find_all(class_="dangerlevel"):
-                danger = b.text
+                danger = b.text#.encode("ascii", "ignore")
             for b in a.find_all(class_="content"):
-                content = b.text
+                content =  b.text#.encode('ascii', 'ignore')
             self.forecasts[district] = {"dangerlevel": danger, "content": content}
 
     def fetch_districts(self):
@@ -93,6 +92,7 @@ class SLF:
 
             for key in self.imgs_district.keys():
                 if self.imgs_district[key].getpixel(ps) > 0:
-                    return self.forecasts[key]
-        except:
-            pass
+                    a = self.forecasts[key]
+                    return a
+        except Exception as e:
+            logging.error(e)

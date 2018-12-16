@@ -1,5 +1,6 @@
 from api.camptocamp import Camptocamp
 from api.transport import Transport
+from api.mailchimp import Mailchimp
 from pt import Stop
 from api.firebase import to_firebase, from_firebase
 
@@ -15,7 +16,7 @@ import sys
 
 def start_logging():
     root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
+    root.setLevel(logging.INFO)
 
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.DEBUG)
@@ -25,13 +26,14 @@ def start_logging():
 
 
 class Escalpy:
-    def __init__(self, activity="skitouring"):
+    def __init__(self, mailchimp, activity="skitouring"):
         """
         acts = ["skitouring", "mountain_climbing", "rock_climbing"]
         """
         self.routes = []
         self.c2c = Camptocamp()
         self.transport = Transport()
+        self.mailchimp = Mailchimp(mailchimp["key"], mailchimp["usr"])
         self.slf = SLF()
         self.activity = activity
 
@@ -53,7 +55,9 @@ class Escalpy:
         _routes = self.c2c.get_routes(bbox, activity=self.activity)
         routes = []
         for _route in _routes[:n]:
-            route = Route.from_c2c(self.c2c.get_route(_route))
+            data, url = self.c2c.get_route(_route)
+            route = Route.from_c2c(data)
+            route.c2c_url = url
             logging.info(route.get_name())
             routes.append(route)
         self.routes = routes
@@ -68,7 +72,7 @@ class Escalpy:
             for access in waypoints:
                 pt_stop = self.nearest_pt_stop(access.point)
                 stop = Stop.from_sbb(pt_stop)
-                distance = access.point.distance(stop.point)
+                distance = access.point.distance(stop.point)/10.0
                 stop.distance = distance
                 _pt_stops.append(stop)
 
@@ -116,6 +120,8 @@ class Escalpy:
             self.stations_df = stations_df
 
     def assign_avalanche(self):
+        self.slf = SLF()
+
         for route in self.routes:
             waypoints = route.get_waypoints("summit")
             if len(waypoints) == 0:
@@ -140,18 +146,37 @@ class Escalpy:
                 route.get_name(),
                 route.get_pt_stop(),
                 route.get_pt_duration(from_station=from_station),
-                route.data["height_diff_up"],
-                route.data["elevation_min"],
-                route.data["elevation_max"],
+                route.height_diff_up,
+                route.elevation_min,
+                route.elevation_max,
                 route.get_danger(),
             ]
 
             data.append(_data)
 
-        return pd.DataFrame(data, columns=["title", "pt_stop", "pt_duration", "height_diff_up", "elevation_min",
-                                           "elevation_max", "danger"])
+        return pd.DataFrame(data, columns=["title", "pt_stop", "pt_duration",
+                                           "height_diff_up", "elevation_min","elevation_max",
+                                           "danger"])
 
     def get_route(self, name):
         for route in self.routes:
             if route.get_name() == name:
                 return route
+
+    def send_emails(self):
+        listname = "Escalp"
+        template = "escalp_weekly"
+
+        txt = """
+        <div style="text-align: center;">Col des Becs de Bossons : Tour des Becs de Bossons<br />
+        &nbsp;</div>
+
+        <div style="text-align: justify;">D&eacute;part de La Tsarva, puis mont&eacute;e au Bec des Bossons par l&#39;arr&ecirc;te N (col du Louch&eacute;). Belles conditions, mais un peu rocailleux par endroit. Quelques fissures dans le manteau neigeux au passage, un peu souffl&eacute; sur la mont&eacute;e vers l&#39;arr&ecirc;te. Conditions moins favorable qu&#39;indiquait le bulletin (Degr&eacute; 2&nbsp;au lieux de 1). Beaucoup de vent sur le haut, mais vu imprenable sur le plateau ainsi que La Maya. Moins int&eacute;ressant maintenant, car la station de Grimentz est ouverte, ce qui n&#39;&eacute;tait pas le cas totalement le 1 D&eacute;cembre&nbsp;:)</div>
+        """
+        route_data = {"txt": txt, "link": "https://www.rts.ch/"}
+        user_data = {"denis.metrailler@sbb.ch": [route_data, route_data]}
+
+        list_id = self.mailchimp.get_list_id(listname)
+
+        self.mailchimp.update_member(data=user_data, list_id=list_id)
+        self.mailchimp.send_emails(listname=listname, template=template)

@@ -1,5 +1,6 @@
 from graphics.map import draw_map
 from waypoint import Waypoint
+import uuid
 
 
 class Route:
@@ -13,6 +14,8 @@ class Route:
         self.pt_connections = {}
         self.pt_duration = None
         self.dangers = {}
+        self.uid = uuid.uuid4()
+        self.c2c_data = None
 
     def get_name(self):
         return self.name
@@ -28,22 +31,20 @@ class Route:
             return [w for w in self.waypoints if w.type == type]
 
     def get_duration(self):
-        """
-        TODO: what should we do with the list
-        :return:
-        """
-        return int(self.data["durations"][0])
+        return int(self.duration)
 
     def set_pt_stops(self, pt_stops):
         self.pt_stops = pt_stops
 
     def get_pt_stops(self):
-        return self.pt_stops
+        return sorted(self.pt_stops, key=lambda x: x.distance)
 
     def set_connections(self, from_station, connections):
         self.pt_connections[from_station] = connections
 
     def get_connections(self, from_station):
+        if from_station not in self.pt_connections:
+            return []
         return self.pt_connections[from_station]
 
     def draw(self):
@@ -76,7 +77,11 @@ class Route:
         self.geo_path = path
 
     def get_danger(self):
-        return self.dangers[-1]["dangerlevel"]
+        if len(self.dangers) == 0:
+            return None
+
+        key = self.dangers.keys()[-1]
+        return self.dangers[key]["dangerlevel"]
 
     @staticmethod
     def from_c2c(data):
@@ -88,9 +93,14 @@ class Route:
         except:
             pass
 
+        route.height_diff_up = data["height_diff_up"]
+        route.elevation_min = data["elevation_min"]
+        route.elevation_max = data["elevation_max"]
+
         route.waypoints = [Waypoint.from_c2c(d) for d in data["associations"]["waypoints"]]
+        route.uid = data["document_id"]
+        route.c2c_data = data
         return route
 
     def to_json(self):
         pass
-

@@ -26,7 +26,7 @@ class Stop:
 
 
 class Connection:
-    def __init__(self, data):
+    def __init__(self, data=None):
         self.data = data
         self.duration = 0
 

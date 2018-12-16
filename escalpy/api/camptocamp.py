@@ -14,7 +14,7 @@ class Camptocamp:
     def get_route(self, data):
         route_id = data["document_id"]
         url = "https://api.camptocamp.org/routes/" + str(route_id)
-        return json.load(urllib2.urlopen(url))
+        return json.load(urllib2.urlopen(url)), url
 
     def get_routes(self, bbox, activity="skitouring"):
         logging.info("Start fetching routes for %s" % activity)
