@@ -1,9 +1,11 @@
+import os
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 sched = BlockingScheduler()
 
 @sched.scheduled_job('interval', seconds=3)
 def timed_job():
+    print os.environ["mailchimp-key"]
     print('This job is run every three minutes.')
 
 @sched.scheduled_job('cron', day_of_week='mon-fri', hour=17)
