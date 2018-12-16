@@ -12,6 +12,7 @@ from shapely.geometry import Point
 import logging
 from api.slf import SLF
 import sys
+import numpy as np
 
 
 def start_logging():
@@ -72,7 +73,7 @@ class Escalpy:
             for access in waypoints:
                 pt_stop = self.nearest_pt_stop(access.point)
                 stop = Stop.from_sbb(pt_stop)
-                distance = access.point.distance(stop.point)/10.0
+                distance = access.point.distance(stop.point) / 10.0
                 stop.distance = distance
                 _pt_stops.append(stop)
 
@@ -155,7 +156,7 @@ class Escalpy:
             data.append(_data)
 
         return pd.DataFrame(data, columns=["title", "pt_stop", "pt_duration",
-                                           "height_diff_up", "elevation_min","elevation_max",
+                                           "height_diff_up", "elevation_min", "elevation_max",
                                            "danger"])
 
     def get_route(self, name):
@@ -167,16 +168,20 @@ class Escalpy:
         listname = "Escalp"
         template = "escalp_weekly"
 
-        txt = """
-        <div style="text-align: center;">Col des Becs de Bossons : Tour des Becs de Bossons<br />
-        &nbsp;</div>
-
-        <div style="text-align: justify;">D&eacute;part de La Tsarva, puis mont&eacute;e au Bec des Bossons par l&#39;arr&ecirc;te N (col du Louch&eacute;). Belles conditions, mais un peu rocailleux par endroit. Quelques fissures dans le manteau neigeux au passage, un peu souffl&eacute; sur la mont&eacute;e vers l&#39;arr&ecirc;te. Conditions moins favorable qu&#39;indiquait le bulletin (Degr&eacute; 2&nbsp;au lieux de 1). Beaucoup de vent sur le haut, mais vu imprenable sur le plateau ainsi que La Maya. Moins int&eacute;ressant maintenant, car la station de Grimentz est ouverte, ce qui n&#39;&eacute;tait pas le cas totalement le 1 D&eacute;cembre&nbsp;:)</div>
-        """
-        route_data = {"txt": txt, "link": "https://www.rts.ch/"}
-        user_data = {"denis.metrailler@sbb.ch": [route_data, route_data]}
-
         list_id = self.mailchimp.get_list_id(listname)
+
+        members = []
+        for m in self.mailchimp.client.lists.members.all(list_id=list_id)["members"]:
+            members.append(m)
+
+        user_data = {}
+        for m in members:
+            r_data = []
+            for r in np.random.choice(self.routes, 2):
+                link = 'http://www.nest-or.ch/outings/view/' + str(r.uid)
+                txt = r.description
+                r_data.append({"link": link, "txt": txt})
+            user_data[m["email_address"]] = r_data
 
         self.mailchimp.update_member(data=user_data, list_id=list_id)
         self.mailchimp.send_emails(listname=listname, template=template)

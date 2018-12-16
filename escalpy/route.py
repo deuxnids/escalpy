@@ -61,7 +61,15 @@ class Route:
         connection = self.get_connection(from_station=from_station)
         if connection is None:
             return None
-        return connection.duration
+
+        def to_minutes(txt):
+            a = txt.split("d")[1]
+            b = a.split(":")
+            h = int(b[0])
+            m = int(b[1])
+            return h * 60 + m
+
+        return to_minutes(connection.data["duration"])
 
     def get_pt_stop(self):
         stops = self.get_pt_stops()
