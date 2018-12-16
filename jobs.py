@@ -1,9 +1,10 @@
 import os
 from apscheduler.schedulers.blocking import BlockingScheduler
-from escalpy.escalpy import Escalpy
+from escalpy.escalpy import Escalpy, start_logging
 
 sched = BlockingScheduler()
 
+start_logging()
 
 
 @sched.scheduled_job('interval', seconds=3)
@@ -28,13 +29,11 @@ def timed_slf():
     escalpy.load_from_firebase(config, user, pw)
     escalpy.assign_avalanche()
     escalpy.save_to_firebase(config, user, pw)
-    print os.environ["mailchimp-key"]
     print('This job is run every three minutes.')
 
 
 @sched.scheduled_job('cron', day_of_week='mon-fri', hour=17)
 def scheduled_job():
-
     config = {
         "apiKey": os.environ["apiKey"],
         "authDomain": os.environ["authDomain"],
@@ -53,5 +52,6 @@ def scheduled_job():
 
     escalpy = Escalpy(mailchimp=mailchimp_data)
     escalpy.send_emails()
+
 
 sched.start()
