@@ -71,7 +71,10 @@ def from_json(data, object):
         if "geojson" in data:
             object.geo_path = data["geojson"]
 
-        object.dangers = data["dangers"]
+        try:
+            object.dangers = data["dangers"]
+        except:
+            object.dangers = {}
         try:
             object.height_diff_up = data["height_diff_up"]
         except:
@@ -97,12 +100,12 @@ def to_firebase(escalpy, user, pw, config):
     user = auth.sign_in_with_email_and_password(user, pw)
     auth.get_account_info(user['idToken'])
     db = firebase.database()
-    db.child("outings").remove(user['idToken'])
+    #db.child("outings").remove(user['idToken'])
     data = {}
     for route in escalpy.routes:
         data[route.uid] = to_json(route)
 
-    db.child("outings").set(data, user['idToken'])
+    db.child("outings").update(data, user['idToken'])
 
 
 def route_to_firebase(route, user, pw, config):
