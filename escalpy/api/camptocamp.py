@@ -22,13 +22,18 @@ class Camptocamp:
         total = 1
         n = 0
         routes = []
-        while n < total:
-            url = "https://api.camptocamp.org/routes?bbox=" + urllib.quote_plus(bbox) + "&act=%s&pl=fr&offset=%i" % (
+        try:
+            while n < total:
+                url = "https://api.camptocamp.org/routes?bbox=" + urllib.quote_plus(bbox) + "&act=%s&pl=fr&offset=%i" % (
                 activity, n)
-            _routes = json.load(urllib2.urlopen(url))
-            total = _routes["total"]
-            n += len(_routes["documents"])
-            routes += _routes["documents"]
+                url += "&trat="+ urllib.quote_plus("1.1,3.3")
+                _routes = json.load(urllib2.urlopen(url))
+                total = _routes["total"]
+                n += len(_routes["documents"])
+                routes += _routes["documents"]
+        except Exception as e:
+            logging.info(e)
+            return routes
         logging.info("Done fetching routes for %s" % activity)
         return routes
 

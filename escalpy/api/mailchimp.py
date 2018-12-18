@@ -46,4 +46,5 @@ class Mailchimp:
             for i, outing in enumerate(data[email_address]):
                 user_data[u'merge_fields']["OUTING_%i" % (i+1)] = outing["txt"]
                 user_data[u'merge_fields']["OUTING_L%i" % (i+1)] = outing["link"]
+                user_data[u'merge_fields']["TITLE_%i" % (i+1)] = outing["title"]
             self.client.lists.members.update(list_id, subscriber_hash=email_address, data=user_data)

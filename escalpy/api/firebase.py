@@ -36,6 +36,7 @@ def to_json(object):
         data["elevation_max"] = object.elevation_max
         data["c2c_url"] = object.c2c_url
         data["c2c_data"] = object.c2c_data
+        data["level"] = object.level
 
     else:
         raise Exception("not yet implemented")
@@ -87,6 +88,11 @@ def from_json(data, object):
             object.elevation_max = data["elevation_max"]
         except:
             object.elevation_max = None
+
+        try:
+            object.level = data["level"]
+        except:
+            object.level = None
         object.c2c_url = data["c2c_url"]
         object.c2c_data = data["c2c_data"]
 
@@ -100,7 +106,7 @@ def to_firebase(escalpy, user, pw, config):
     user = auth.sign_in_with_email_and_password(user, pw)
     auth.get_account_info(user['idToken'])
     db = firebase.database()
-    #db.child("outings").remove(user['idToken'])
+    # db.child("outings").remove(user['idToken'])
     data = {}
     for route in escalpy.routes:
         data[route.uid] = to_json(route)

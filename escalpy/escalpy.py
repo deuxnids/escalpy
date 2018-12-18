@@ -55,12 +55,16 @@ class Escalpy:
 
         _routes = self.c2c.get_routes(bbox, activity=self.activity)
         routes = []
-        for _route in _routes[:n]:
-            data, url = self.c2c.get_route(_route)
-            route = Route.from_c2c(data)
-            route.c2c_url = url
-            logging.info(route.get_name())
-            routes.append(route)
+        try:
+            for _route in _routes[:n]:
+                data, url = self.c2c.get_route(_route)
+                route = Route.from_c2c(data)
+                route.c2c_url = url
+                logging.info(route.get_name())
+                routes.append(route)
+        except Exception as e:
+            logging.info(e)
+            self.routes = routes
         self.routes = routes
 
     def search_pt_stops(self):
@@ -180,7 +184,8 @@ class Escalpy:
             for r in np.random.choice(self.routes, 2):
                 link = 'http://www.nest-or.ch/outings/view/' + str(r.uid)
                 txt = r.description
-                r_data.append({"link": link, "txt": txt})
+                title = r.name
+                r_data.append({"link": link, "txt": txt, "title": title})
             user_data[m["email_address"]] = r_data
 
         self.mailchimp.update_member(data=user_data, list_id=list_id)

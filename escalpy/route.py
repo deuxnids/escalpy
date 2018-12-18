@@ -16,6 +16,7 @@ class Route:
         self.dangers = {}
         self.uid = uuid.uuid4()
         self.c2c_data = None
+        self.level = None
 
     def get_name(self):
         return self.name
@@ -104,6 +105,9 @@ class Route:
         route.height_diff_up = data["height_diff_up"]
         route.elevation_min = data["elevation_min"]
         route.elevation_max = data["elevation_max"]
+
+        if "ski_rating" in data:
+            route.level = data["ski_rating"]
 
         route.waypoints = [Waypoint.from_c2c(d) for d in data["associations"]["waypoints"]]
         route.uid = data["document_id"]
