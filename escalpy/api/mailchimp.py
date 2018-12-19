@@ -1,5 +1,5 @@
 from mailchimp3 import MailChimp
-
+import datetime
 
 class Mailchimp:
     def __init__(self, key, username):
@@ -10,12 +10,15 @@ class Mailchimp:
     def send_emails(self, listname="Escalp", template="escalp_weekly"):
         list_id = self.get_list_id(listname)
         template_id = self.get_template_id(template)
+        now = datetime.datetime.now()
+
+        subject = "Escalp du %i.%i.%i" % (now.day, now.month, now.year)
 
         campaign_data = {"settings": {"title": "Weekly Escalp",
-                                      "subject_line": "Weekly Escalp digest",
+                                      "subject_line": subject,
                                       "from_name": "Escalp Team",
                                       "template_id" : template_id ,
-                                      "reply_to": "denis@metrailler.ch",
+                                      "reply_to": "team@escalp.ch",
                                       },
                          "recipients": {"list_id": list_id},
                          "type": "regular"}

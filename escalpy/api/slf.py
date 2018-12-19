@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import logging
+import dateparser
+
 
 
 # https://github.com/ysavary/WindMobile2-Server/blob/master/providers/slf.py
@@ -36,7 +38,7 @@ class SLF:
         self.date = self.get_date()
 
     def get_date(self):
-        return self.soup.find_all(attrs={"class": "date-aktuell"})[0].text.replace("\n", "").replace("\t", "").replace(".", "")
+        return dateparser.parse(self.soup.find_all(attrs={"class": "date-aktuell"})[0].text.replace("\n", "").replace("\t", "")).isoformat()
 
     def fetch(self):
         self.fetch_districts()
