@@ -37,6 +37,7 @@ def to_json(object):
         data["c2c_url"] = object.c2c_url
         data["c2c_data"] = object.c2c_data
         data["level"] = object.level
+        data["weather"] = object.weather
 
     else:
         raise Exception("not yet implemented")
@@ -93,6 +94,13 @@ def from_json(data, object):
             object.level = data["level"]
         except:
             object.level = None
+
+
+        try:
+            object.weather = data["weatehr"]
+        except:
+            object.weather = []
+
         object.c2c_url = data["c2c_url"]
         object.c2c_data = data["c2c_data"]
 

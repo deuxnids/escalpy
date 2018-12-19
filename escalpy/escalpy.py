@@ -3,7 +3,7 @@ from api.transport import Transport
 from api.mailchimp import Mailchimp
 from pt import Stop
 from api.firebase import to_firebase, from_firebase
-
+from api.weather import get_route_weather
 from shapely.ops import nearest_points
 from route import Route
 import pandas as pd
@@ -123,6 +123,10 @@ class Escalpy:
             stations_df = stations_df.to_crs({'init': 'EPSG:2056'})
 
             self.stations_df = stations_df
+
+    def assign_weather(self):
+        for r in self.routes:
+            get_route_weather(r)
 
     def assign_avalanche(self):
         self.slf = SLF()

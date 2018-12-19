@@ -17,6 +17,7 @@ class Route:
         self.uid = uuid.uuid4()
         self.c2c_data = None
         self.level = None
+        self.weather = []
 
     def get_name(self):
         return self.name
