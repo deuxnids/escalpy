@@ -4,6 +4,8 @@ from api.mailchimp import Mailchimp
 from pt import Stop
 from api.firebase import to_firebase, from_firebase
 from api.weather import get_route_weather
+from api.firebase import to_json, from_json
+
 from shapely.ops import nearest_points
 from route import Route
 import pandas as pd
@@ -13,6 +15,7 @@ import logging
 from api.slf import SLF
 import sys
 import numpy as np
+import pyrebase
 
 
 def start_logging():
@@ -124,23 +127,41 @@ class Escalpy:
 
             self.stations_df = stations_df
 
-    def assign_weather(self):
-        for r in self.routes:
-            get_route_weather(r)
+    def assign_weather(self, route):
+        get_route_weather(route)
 
-    def assign_avalanche(self):
+    def assign_avalanche(self, route):
+        waypoints = route.get_waypoints("summit")
+        if len(waypoints) == 0:
+            waypoints = route.get_waypoints()
+
+        if len(waypoints) > 0:
+            waypoint = waypoints[0]
+            p = waypoint.point
+            danger = self.slf.get_danger_by_coord(p.x, p.y)
+            route.dangers[self.slf.date] = danger
+
+    def update_conditions(self, config, user, pw):
+        firebase = pyrebase.initialize_app(config)
+        auth = firebase.auth()
+
+        user = auth.sign_in_with_email_and_password(user, pw)
+        auth.get_account_info(user['idToken'])
+        db = firebase.database()
+
         self.slf = SLF()
 
-        for route in self.routes:
-            waypoints = route.get_waypoints("summit")
-            if len(waypoints) == 0:
-                waypoints = route.get_waypoints()
+        for route_id in db.child("outings").shallow().get().each():
+            data = db.child("outings/" + route_id).get(user['idToken']).val()
+            route = Route()
+            route = from_json(data, route)
 
-            if len(waypoints) > 0:
-                waypoint = waypoints[0]
-                p = waypoint.point
-                danger = self.slf.get_danger_by_coord(p.x, p.y)
-                route.dangers[self.slf.date] = danger
+            self.assign_avalanche(route)
+            self.assign_weather(route)
+
+            data = to_json(route)
+            db.child("outings/" + route_id).update(data, user['idToken'])
+            logging.info("%s processed" % route_id)
 
     def get_df(self, from_station):
         data = []

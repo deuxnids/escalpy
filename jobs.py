@@ -8,7 +8,7 @@ start_logging()
 
 
 @sched.scheduled_job('cron', minute=30)
-def timed_slf():
+def conditions():
     config = {
         "apiKey": os.environ["apiKey"],
         "authDomain": os.environ["authDomain"],
@@ -26,10 +26,7 @@ def timed_slf():
     mailchimp_data = {"key": key, "usr": usr}
 
     escalpy = Escalpy(mailchimp=mailchimp_data)
-    escalpy.load_from_firebase(config, user, pw)
-    escalpy.assign_avalanche()
-    escalpy.save_to_firebase(config, user, pw)
-    print('This job is run every three minutes.')
+    escalpy.update_conditions(config=config, user=user, pw=pw)
 
 
 @sched.scheduled_job('cron',  minute=30)
