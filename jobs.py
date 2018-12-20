@@ -48,7 +48,7 @@ def scheduled_job():
     mailchimp_data = {"key": key, "usr": usr}
 
     escalpy = Escalpy(mailchimp=mailchimp_data)
-    escalpy.load_from_firebase(config, user=user, pw=pw)
+    escalpy.load_from_firebase(config, user=user, pw=pw, n=50)
     escalpy.send_emails()
 
 

@@ -46,8 +46,8 @@ class Escalpy:
     def save_to_firebase(self, config, user, pw):
         to_firebase(self, user=user, pw=pw, config=config)
 
-    def load_from_firebase(self, config, user, pw):
-        self.routes = from_firebase(user=user, pw=pw, config=config)
+    def load_from_firebase(self, config, user, pw, n=None):
+        self.routes = from_firebase(user=user, pw=pw, config=config, n=n)
 
     def fetch_routes(self, n=-1):
         bbox = [

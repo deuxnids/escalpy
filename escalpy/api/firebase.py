@@ -133,14 +133,18 @@ def route_to_firebase(route, user, pw, config):
     db.child("outings/" + str(route.uid)).update(data, user['idToken'])
 
 
-def from_firebase(user, pw, config):
+def from_firebase(user, pw, config, n=None):
     firebase = pyrebase.initialize_app(config)
     auth = firebase.auth()
 
     user = auth.sign_in_with_email_and_password(user, pw)
     auth.get_account_info(user['idToken'])
     db = firebase.database()
-    data = db.child("outings").get(user['idToken']).val()
+    if n is not None:
+        data = db.child("outings").order_by_key().limit_to_first(n).get(user['idToken']).val()
+    else:
+        data = db.child("outings").get(user['idToken']).val()
+
     routes = []
     for d in data.keys():
         route = Route()
