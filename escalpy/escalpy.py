@@ -207,7 +207,7 @@ class Escalpy:
         for m in members:
             r_data = []
             for r in np.random.choice(self.routes, 2):
-                link = 'http://www.nest-or.ch/outings/view/' + str(r.uid)
+                link = 'http://www.escalp.ch/outings/view/' + str(r.uid)
                 txt = r.description
                 title = r.name
                 r_data.append({"link": link, "txt": txt, "title": title})
