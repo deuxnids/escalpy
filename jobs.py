@@ -29,7 +29,7 @@ def conditions():
     escalpy.update_conditions(config=config, user=user, pw=pw)
 
 
-@sched.scheduled_job('cron',  minute=30)
+@sched.scheduled_job('cron', minute=30)
 def scheduled_job():
     config = {
         "apiKey": os.environ["apiKey"],
@@ -52,4 +52,5 @@ def scheduled_job():
     escalpy.send_emails()
 
 
-sched.start()
+if __name__ == "__main__":
+    sched.start()
