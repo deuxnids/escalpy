@@ -7,7 +7,7 @@ sched = BlockingScheduler()
 start_logging()
 
 
-@sched.scheduled_job('cron', minute=30)
+@sched.scheduled_job('cron', hour=18)
 def conditions():
     config = {
         "apiKey": os.environ["apiKey"],
@@ -29,7 +29,7 @@ def conditions():
     escalpy.update_conditions(config=config, user=user, pw=pw)
 
 
-@sched.scheduled_job('cron', minute=30)
+@sched.scheduled_job('cron', hour=19)
 def scheduled_job():
     config = {
         "apiKey": os.environ["apiKey"],
