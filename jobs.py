@@ -7,7 +7,7 @@ sched = BlockingScheduler()
 start_logging()
 
 
-@sched.cron_schedule('cron', hour=10)
+@sched.scheduled_job('cron', minute=30)
 def timed_slf():
     config = {
         "apiKey": os.environ["apiKey"],
@@ -32,7 +32,7 @@ def timed_slf():
     print('This job is run every three minutes.')
 
 
-@sched.cron_schedule('cron',  hour=11)
+@sched.scheduled_job('cron',  minute=30)
 def scheduled_job():
     config = {
         "apiKey": os.environ["apiKey"],
